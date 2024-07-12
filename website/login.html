@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="wrapper">
-    <form action="/api/register" method="post">
+    <form action="/website/login.html" method="post">
       <h1>Login</h1>
       <div class="input-box">
         <input type="text" placeholder="Username" name="username" required>
@@ -22,6 +22,13 @@
         <label><input type="checkbox" name="remember">Remember Me</label>
         <a href="#">Forgot Password</a>
       </div>
+
+      <ul class=errors>
+        {% for error in errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+
       <button type="submit" class="btn">Login</button>
       <div class="register-link">
         <p>Don't have an account? <a href="register.html">Register</a></p>

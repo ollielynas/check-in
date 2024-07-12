@@ -102,3 +102,12 @@
   .register-link p a:hover{
     text-decoration: underline;
   }
+
+.errors li {
+  color: red;
+}
+
+.errors {
+  margin-top: -0.5em;
+  margin-bottom: 0.5em;
+}

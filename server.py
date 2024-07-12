@@ -463,7 +463,7 @@ def log_user_in(username, extend):
     conn.commit()
 
     response = redirect("/website/index.html")
-    response.set_cookie("token", token, max_age=num_seconds, httponly=True)
+    response.set_cookie("token", token, max_age=num_seconds)
 
     return response
 

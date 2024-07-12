@@ -15,13 +15,25 @@
         check-in
         <div class="header-button">
             <button onclick="window.location='./login.html';" class="sign-in-button">sign in</button>   
-
+            <button onclick="window.location='./settings.html';" class="settings">settings</button>   
         </div>
     </div>
     <div class="content">
+        <div class="out-session-content">
         <button onclick="start_session()" class="start-session big-button">
             Start Session
         </button>
+        <div class="h">
+        remind me every:
+        <input value="20" type="number"></input>
+        min
+        </div>
+        <div class="h">
+        for the next:
+        <input value="60" type="number"></input>
+        min
+        </div>
+    </div>
         <div class="in-session-content">
             it has been xxx amount of time since you last clicked ok
             <br>
@@ -32,6 +44,7 @@
         </button>
     </div>
     </div>
+
 
 </body>
 </html>

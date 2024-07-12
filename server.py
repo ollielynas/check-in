@@ -1,5 +1,5 @@
 import sqlite3, random
-from flask import Flask, request, send_from_directory, redirect, render_template, Response
+from flask import Flask, request, send_from_directory, redirect, render_template, Response, jsonify
 from argon2 import PasswordHasher
 import argon2
 import json
@@ -56,7 +56,7 @@ def setup_db():
 
     conn.commit()
 
-#setup_db()
+setup_db()
 
 app = Flask(__name__, template_folder="./website/")
 
@@ -493,3 +493,25 @@ def get_id_from_username(username):
 
     if res is None: return None
     return res[0]
+
+
+#LOCATION STUFF
+# Store user locations in memory (for simplicity, use a database in production)
+#user_locations = {}
+
+# @app.route('/update_location', methods=['POST'])
+# def update_location():
+#     data = request.get_json()
+#     user_id = "example_user"  # Replace with actual user ID from session/auth
+#     user_locations[user_id] = (data['latitude'], data['longitude'])
+#     return jsonify(success=True)
+
+# @app.route('/get_location/<user_id>', methods=['GET'])
+# def get_location(user_id):
+#     location = user_locations.get(user_id)
+#     if location:
+#         return jsonify(latitude=location[0], longitude=location[1])
+#     return jsonify(error="User not found"), 404
+
+# if __name__ == '__main__':
+#     app.run(debug=True)

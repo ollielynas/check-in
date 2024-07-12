@@ -14,6 +14,8 @@ def setup_db():
 
     cur.execute("DROP TABLE IF EXISTS user")
     cur.execute("DROP TABLE IF EXISTS session")
+    cur.execute("DROP TABLE IF EXISTS button_press")
+    cur.execute("DROP TABLE IF EXISTS supervisor")
 
     cur.execute("""CREATE TABLE user(
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -32,10 +34,25 @@ def setup_db():
                 creation STRING NOT NULL,
                 expiry STRING NOT NULL
     )""")
+    
+    cur.execute("""CREATE TABLE button_press(
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                user_id INTEGER NOT NULL,
+
+                timestamp STRING NOT NULL,
+                location STRING
+    )""")
+
+    cur.execute("""CREATE TABLE supervisor(
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+
+                supervisor_id INTEGER NOT NULL,
+                supervisee_id INTEGER NOT NULL
+    )""")
 
     conn.commit()
 
-setup_db()
+#setup_db()
 
 app = Flask(__name__, template_folder="./website/")
 
@@ -101,11 +118,15 @@ def start_session():
     user = authenticate_user()
 
     if user is None:
-        return Response(
-            json.dumps({"error": "unauthenticated"}),
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
             403,
             mimetype="application/json"
         )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
     
     cur = conn.cursor()
     (in_session,) = cur.execute("SELECT (in_session) FROM user WHERE id = ?", [user]).fetchone()
@@ -113,7 +134,7 @@ def start_session():
 
     if in_session:
         return Response(
-            json.dumps({"error": "session already started"}),
+            json.dumps({"error": "IN_SESSION"}),
             400,
             mimetype="application/json"
         )
@@ -125,6 +146,257 @@ def start_session():
     conn.commit()
 
     return Response(json.dumps({"result": "success"}), 200, mimetype="application/json")
+
+@app.route("/api/button_press", methods = ["POST"])
+def button_press():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    cur = conn.cursor()
+    (in_session,) = cur.execute("SELECT (in_session) FROM user WHERE id = ?", [user]).fetchone()
+
+    if not in_session:
+        return Response(
+            json.dumps({"error": ""}),
+            400,
+            mimetype="application/json"
+        )
+    
+    data = request.get_json(force=True)
+
+    location = None
+    if "location" in data:
+        location = data["location"]
+        assert type(location) == str
+
+    timestamp = datetime.now().strftime(TIME_FORMAT)
+
+    cur.execute("INSERT INTO button_press (user_id, timestamp, location) VALUES (?, ?, ?)", [user, timestamp, location])
+    conn.commit()
+
+    return Response(json.dumps({"result": "success"}), 200, mimetype="application/json")
+
+@app.route("/api/am_i_in_session", methods = ["GET"])
+def is_in_session():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    cur = conn.cursor()
+    (in_session,) = cur.execute("SELECT (in_session) FROM user WHERE id = ?", [user]).fetchone()
+
+    return Response(json.dumps({"result": bool(in_session)}), 200, mimetype="application/json")
+
+@app.route("/api/add_supervisor", methods = ["POST"])
+def add_supervisor():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    username = request.args.get('username')
+    supervisor_id = get_id_from_username(username)
+
+    if supervisor_id is None:
+        res = Response(
+            json.dumps({"error": "INVALID_USERNAME"}),
+            400,
+            mimetype="application/json"
+        )
+
+        return res
+        
+    if supervisor_id == user:
+        res = Response(
+            json.dumps({"error": "SELF_REFERENCE"}),
+            400,
+            mimetype="application/json"
+        )
+
+        return res
+
+    cur = conn.cursor()
+    if cur.execute("SELECT id FROM supervisor WHERE supervisee_id = ? AND supervisor_id = ?", [user, supervisor_id]).fetchone() is None:
+        cur.execute("INSERT INTO supervisor (supervisor_id, supervisee_id) VALUES (?, ?)", [supervisor_id, user])
+        conn.commit()
+
+    return Response(json.dumps({"result": "success"}), 200, mimetype="application/json")
+
+@app.route("/api/remove_supervisor", methods = ["POST"])
+def remove_supervisor():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    username = request.args.get('username')
+    supervisor_id = get_id_from_username(username)
+
+    if supervisor_id is None:
+        res = Response(
+            json.dumps({"error": "INVALID_USERNAME"}),
+            400,
+            mimetype="application/json"
+        )
+
+        return res
+        
+    if supervisor_id == user:
+        res = Response(
+            json.dumps({"error": "SELF_REFERENCE"}),
+            400,
+            mimetype="application/json"
+        )
+
+        return res
+
+    cur = conn.cursor()
+    cur.execute("DELETE FROM supervisor WHERE supervisee_id = ? AND supervisor_id = ?", [user, supervisor_id])
+    conn.commit()
+
+    return Response(json.dumps({"result": "success"}), 200, mimetype="application/json")
+
+@app.route("/api/supervisors", methods = ["GET"])
+def get_supervisors():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+
+    cur = conn.cursor()
+    res = cur.execute("SELECT user.username FROM supervisor JOIN user ON user.id=supervisor.supervisor_id WHERE supervisee_id = ?", [user]).fetchall()
+    res = [x[0] for x in res]
+
+    return Response(json.dumps({"result": res}), 200, mimetype="application/json")
+
+@app.route("/api/supervisees", methods = ["GET"])
+def get_supervisees():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+
+    cur = conn.cursor()
+    res = cur.execute("SELECT user.username FROM supervisor JOIN user ON user.id=supervisor.supervisee_id WHERE supervisor_id = ?", [user]).fetchall()
+    res = [x[0] for x in res]
+
+    return Response(json.dumps({"result": res}), 200, mimetype="application/json")
+
+@app.route("/api/presses", methods = ["GET"])
+def get_presses():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    username = request.args.get('username')
+
+    cur = conn.cursor()
+
+    username_res = cur.execute("SELECT id, in_session, session_start_time FROM user WHERE username = ?", [username]).fetchone()
+
+    if username_res is None:
+        res = Response(
+            json.dumps({"error": "INVALID_USERNAME"}),
+            400,
+            mimetype="application/json"
+        )
+
+        return res
+
+    (user_id, in_session, start_time) = username_res
+
+    allowed = True
+    if user_id != user:
+        allowed = cur.execute("SELECT supervisor_id FROM supervisor WHERE supervisor_id = ? AND supervisee_id = ?", [user, user_id]).fetchone() is not None
+
+    if not allowed:
+        res = Response(
+            json.dumps({"error": "FORBIDDEN"}),
+            400,
+            mimetype="application/json"
+        )
+
+        return res
+
+    if not in_session:
+        res = "not in session"
+    else:
+        presses = cur.execute("SELECT timestamp, location FROM button_press WHERE user_id = ? AND timestamp >= ?", [user_id, start_time]).fetchall()
+
+        presses = [
+            {
+                "timestamp": timestamp,
+                "location": location
+            }
+            for (timestamp, location) in presses
+        ]
+
+        res = {
+            "start": start_time,
+            "presses": presses
+        }
+
+    return Response(json.dumps({"result": res}), 200, mimetype="application/json")
 
 @app.route("/website/<path:path>")
 def serve_file(path):
@@ -176,3 +448,11 @@ def authenticate_user():
             return user_id
     else:
         return None
+    
+def get_id_from_username(username):
+    cur = conn.cursor()
+
+    res = cur.execute("SELECT id FROM user WHERE username = ?", [username]).fetchone()
+
+    if res is None: return None
+    return res[0]

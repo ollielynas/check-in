@@ -3,7 +3,9 @@ from flask import Flask, request, send_from_directory, redirect, render_template
 from argon2 import PasswordHasher
 import argon2
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+
+TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 conn = sqlite3.connect("db/db.sqlite", check_same_thread=False)
 
@@ -25,12 +27,15 @@ def setup_db():
     cur.execute("""CREATE TABLE session(
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 token STRING NOT NULL,
-                user_id INTEGER NOT NULL
+                user_id INTEGER NOT NULL,
+
+                creation STRING NOT NULL,
+                expiry STRING NOT NULL
     )""")
 
     conn.commit()
 
-#setup_db()
+setup_db()
 
 app = Flask(__name__, template_folder="./website/")
 
@@ -109,11 +114,11 @@ def start_session():
     if in_session:
         return Response(
             json.dumps({"error": "session already started"}),
-            403,
+            400,
             mimetype="application/json"
         )
     
-    start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    start_time = datetime.now().strftime(TIME_FORMAT)
 
     cur.execute("UPDATE user SET in_session = 1, session_start_time = ? WHERE id = ?", [start_time, user])
 
@@ -132,14 +137,24 @@ def log_user_in(username, extend):
     user_id = res.fetchone()[0]
     print(user_id)
 
+    num_seconds = (86400 if extend else 3600)
+
     token = "".join(random.choice("abcdefghijklmnopqrstuvwxyzACDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_") for _ in range(100))
 
-    cur.execute("INSERT INTO session (token, user_id) VALUES (?, ?)", [token, user_id])
+    creation_time = datetime.now()
+    expiry_time = creation_time + timedelta(seconds=num_seconds)
+
+    cur.execute("INSERT INTO session (token, user_id, creation, expiry) VALUES (?, ?, ?, ?)", [
+        token, 
+        user_id,
+        creation_time.strftime(TIME_FORMAT),
+        expiry_time.strftime(TIME_FORMAT)
+    ])
 
     conn.commit()
 
     response = redirect("/website/index.html")
-    response.set_cookie("token", token, max_age=(86400 if extend else 3600), httponly=True)
+    response.set_cookie("token", token, max_age=num_seconds, httponly=True)
 
     return response
 
@@ -150,9 +165,14 @@ def authenticate_user():
     token = request.cookies["token"]
     cur = conn.cursor()
 
-    res = cur.execute("SELECT user_id FROM session WHERE token = ?", [token])
+    res = cur.execute("SELECT user_id, expiry FROM session WHERE token = ?", [token])
     res = res.fetchone()
     if res is not None:
-        return res[0]
+        (user_id, expiry_time) = res
+
+        if expiry_time <= datetime.now().strftime(TIME_FORMAT):
+            return None
+        else:
+            return user_id
     else:
         return None

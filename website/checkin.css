@@ -1,0 +1,72 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f0f0f0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    color: #333;
+}
+
+main {
+    display: flex;
+    justify-content: space-between;
+}
+
+.map {
+    flex: 3;
+    height: 600px;
+    border: 1px solid #ddd;
+}
+
+.friend-list {
+    flex: 1;
+    margin-left: 20px;
+    padding: 10px;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.friend-list h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.friend-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.friend-list li {
+    padding: 10px;
+    background: #fff;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.friend-list li span {
+    display: block;
+    font-size: 14px;
+    color: #666;
+}
+
+.friend-list li span.time {
+    color: #333;
+    font-weight: bold;
+}

@@ -8,17 +8,29 @@
     <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
     <script src='main.js'></script>
 </head>
-<body>
-    <div class="sign-in-popup">
-        sign in
-        <br>
-        <input type="text" class="username">
-        <input type="text" class="password">
-        </input>
+<body in-session="false">
+
+
+    <div class="header">
+        check-in
+        <div class="header-button">
+            <button onclick="window.location='./login.html';" class="sign-in-button">sign in</button>   
+
+        </div>
     </div>
-
-    <div>
-
+    <div class="content">
+        <button onclick="start_session()" class="start-session big-button">
+            Start Session
+        </button>
+        <div class="in-session-content">
+            it has been xxx amount of time since you last clicked ok
+            <br>
+            <br>
+            <br>
+        <button class="confirm-ok big-button">
+            im ok
+        </button>
+    </div>
     </div>
 
 </body>

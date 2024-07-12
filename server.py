@@ -5,8 +5,10 @@ import argon2
 import json
 import os
 from datetime import datetime, timedelta
+import pytz
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+TIMEZONE = pytz.timezone("Pacific/Auckland")
 
 conn = sqlite3.connect("db/db.sqlite", check_same_thread=False)
 
@@ -143,7 +145,7 @@ def start_session():
             mimetype="application/json"
         )
     
-    start_time = datetime.now().strftime(TIME_FORMAT)
+    start_time = datetime.now(TIMEZONE).strftime(TIME_FORMAT)
 
     cur.execute("UPDATE user SET in_session = 1, session_start_time = ? WHERE id = ?", [start_time, user])
 
@@ -176,7 +178,7 @@ def end_session():
             mimetype="application/json"
         )
     
-    start_time = datetime.now().strftime(TIME_FORMAT)
+    start_time = datetime.now(TIMEZONE).strftime(TIME_FORMAT)
 
     cur.execute("UPDATE user SET in_session = 0 WHERE id = ?", [user])
 
@@ -216,7 +218,7 @@ def button_press():
         location = data["location"]
         assert type(location) == str
 
-    timestamp = datetime.now().strftime(TIME_FORMAT)
+    timestamp = datetime.now(TIMEZONE).strftime(TIME_FORMAT)
 
     cur.execute("INSERT INTO button_press (user_id, timestamp, location) VALUES (?, ?, ?)", [user, timestamp, location])
     conn.commit()
@@ -450,7 +452,7 @@ def log_user_in(username, extend):
 
     token = "".join(random.choice("abcdefghijklmnopqrstuvwxyzACDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_") for _ in range(100))
 
-    creation_time = datetime.now()
+    creation_time = datetime.now(TIMEZONE)
     expiry_time = creation_time + timedelta(seconds=num_seconds)
 
     cur.execute("INSERT INTO session (token, user_id, creation, expiry) VALUES (?, ?, ?, ?)", [
@@ -479,7 +481,7 @@ def authenticate_user():
     if res is not None:
         (user_id, expiry_time) = res
 
-        if expiry_time <= datetime.now().strftime(TIME_FORMAT):
+        if expiry_time <= datetime.now(TIMEZONE).strftime(TIME_FORMAT):
             return None
         else:
             return user_id

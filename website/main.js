@@ -5,6 +5,12 @@ function start_session() {
     });
 }
 
+function end_session() {
+    fetch("/api/end_session", {
+        method: "POST"
+    });
+}
+
 function button_press() {
     fetch("/api/button_press", {
         body: JSON.stringify({
@@ -36,4 +42,8 @@ async function get_supervisors() {
 
 async function get_supervisees() {
     return (await (await fetch("/api/supervisees")).json())["result"];
+}
+
+async function get_press_info(username) {
+    return (await (await fetch(`/api/presses?username=${encodeURIComponent(username)}`)).json())["result"];
 }

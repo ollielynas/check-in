@@ -3,6 +3,7 @@ from flask import Flask, request, send_from_directory, redirect, render_template
 from argon2 import PasswordHasher
 import argon2
 import json
+import os
 from datetime import datetime, timedelta
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -10,6 +11,9 @@ TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 conn = sqlite3.connect("db/db.sqlite", check_same_thread=False)
 
 def setup_db():
+    if not os.path.exists("./db"):
+        os.mkdir("db")
+
     cur = conn.cursor()
 
     cur.execute("DROP TABLE IF EXISTS user")
@@ -142,6 +146,39 @@ def start_session():
     start_time = datetime.now().strftime(TIME_FORMAT)
 
     cur.execute("UPDATE user SET in_session = 1, session_start_time = ? WHERE id = ?", [start_time, user])
+
+    conn.commit()
+
+    return Response(json.dumps({"result": "success"}), 200, mimetype="application/json")
+
+@app.route("/api/end_session", methods = ["POST"])
+def end_session():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    cur = conn.cursor()
+    (in_session,) = cur.execute("SELECT (in_session) FROM user WHERE id = ?", [user]).fetchone()
+
+    if not in_session:
+        return Response(
+            json.dumps({"error": "NOT_IN_SESSION"}),
+            400,
+            mimetype="application/json"
+        )
+    
+    start_time = datetime.now().strftime(TIME_FORMAT)
+
+    cur.execute("UPDATE user SET in_session = 0 WHERE id = ?", [user])
 
     conn.commit()
 

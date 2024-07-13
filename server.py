@@ -7,11 +7,22 @@ import os
 from datetime import datetime, timedelta
 from flask_apscheduler import APScheduler
 import pytz
+import yagmail
+
+SENDER_EMAIL_ADDRESS = {"dummyemail8001@gmail.com": "Check-in Chicken"}
+yag = yagmail.SMTP(SENDER_EMAIL_ADDRESS, oauth2_file='oauth_yagmail.json')
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 TIMEZONE = pytz.timezone("Pacific/Auckland")
 
 conn = sqlite3.connect("db/db.sqlite", check_same_thread=False)
+
+def send_email(yag, to, subject, contents):
+    print("Sending email to", to, "with subject '" + subject + "'")
+    print("=== EMAIL CONTENTS BEGIN ===")
+    print(contents)
+    print("=== EMAIL CONTENTS END ===")
+    yag.send(to=to, subject=subject, contents=contents)
 
 def setup_db():
     if not os.path.exists("./db"):
@@ -60,7 +71,7 @@ def setup_db():
     cur.execute("ALTER TABLE user ADD checkin_interval INTEGER")
     cur.execute("ALTER TABLE user ADD session_stop STRING")
     cur.execute("ALTER TABLE user ADD last_checkin STRING")
-    cur.execute("ALTER TABLE user ADD alerted INTEGER")
+    cur.execute("ALTER TABLE user ADD alerted INTEGER NOT NULL DEFAULT 0")
     cur.execute("ALTER TABLE user ADD email STRING")
 
     conn.commit()
@@ -607,6 +618,14 @@ def get_id_from_username(username):
     if res is None: return None
     return res[0]
 
+ALERT_EMAIL_SUBJECT = "Check-in Chicken Alert"
+ALERT_EMAIL_CONTENTS = """
+Your friend, {name} has not checked-in on Check-in Chicken. Give 'em a ring.
+
+Sincrerest Regard,
+
+Charlie
+"""
 
 def check(text):
     cur = conn.cursor()
@@ -619,8 +638,26 @@ def check(text):
 
     conn.commit()
 
-    #res = cur.execute("SELECT id, username, session_start_time, interval, last_checkin")
+    res = cur.execute("SELECT id, username, session_start_time, checkin_interval, last_checkin FROM user WHERE alerted = 0 AND in_session = 1").fetchall()
+    
+    for user_id, username, session_start, interval, last_checkin in res:
+        alert_time = datetime.strptime(last_checkin, TIME_FORMAT) + timedelta(minutes=interval+5)
+        print(username, alert_time)
+        if alert_time <= datetime.now():
+            print("Alerting")
+            for email in cur.execute("SELECT user.email FROM supervisor JOIN user ON user.id=supervisor.supervisor_id WHERE supervisee_id = ?", [user_id]).fetchall():
+                if email is not None and email != "":
+                    try:
+                        send_email(yag, email, ALERT_EMAIL_SUBJECT, ALERT_EMAIL_CONTENTS.format(name=username))
+                    except:
+                        pass
+            
+            cur.execute("UPDATE user SET alerted = 1 WHERE id = ?", [user_id])
+
+    conn.commit()
 
 scheduler = APScheduler()
 scheduler.add_job(func=check, args=['job run'], trigger='interval', id='job', seconds=5)
 scheduler.start()
+
+#send_email(yag, "anatol.coen@gmail.com", "Test", "Test")

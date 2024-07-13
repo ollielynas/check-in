@@ -14,6 +14,7 @@ function get_params_and_start_session() {
     start_session(intervalp, durationp).then(res => {
         interval = intervalp;
         session_end_time = Date.now() + durationp * 60 * 1000;
+        updateCheckinTime();
     });
 }
 
@@ -117,6 +118,7 @@ windowOnLoad = async () => {
 
         start_time = Date.parse(resp["start"]);
         session_end_time = Date.parse(resp["stop"]);
+        interval = resp["interval"];
 
         console.log(resp);
         if (resp["presses"].length != 0) {

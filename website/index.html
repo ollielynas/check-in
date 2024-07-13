@@ -33,12 +33,12 @@
         </button>
         <div class="h">
             <span>Check in every</span>
-        <span onkeypress="return /^\d+$/.test(String.fromCharCode(event.charCode));" contenteditable="true" value="20" type="number">20</span>
+        <span onkeypress="return /^\d+$/.test(String.fromCharCode(event.charCode));" contenteditable="true" value="20" type="number" id="session-interval">20</span>
         <span>mins</span>
         </div>
         <div class="h">
         <span>For the next</span>
-        <span onkeypress="return /^\d+$/.test(String.fromCharCode(event.charCode));" contenteditable="true" value="60" type="number">60</span>
+        <span onkeypress="return /^\d+$/.test(String.fromCharCode(event.charCode));" contenteditable="true" value="60" type="number" id="session-duration">60</span>
         <span>mins</span>
         </div>
     </div>
@@ -49,7 +49,7 @@
             <img src="vine2.png"><img>
             <h1 id="timer">00:00:01</h1>
             <i>Since you last checked in</i> 
-            <br>    
+            <i>Check in by <span id="checkin-time"></span></i>  
             <br>
             <br>
         <button id="checkin-button" class="confirm-ok button-9" onclick="checkIn()">

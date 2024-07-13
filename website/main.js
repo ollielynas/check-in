@@ -130,13 +130,33 @@ windowOnLoad = async () => {
 }
 
 async function checkIn() {
-    const d = new Date();
-    start_time = d.getTime();
-    update_timer();
+    const button = document.getElementById("checkin-button");
+    button.innerText = "checking in .";
+
+    let counter = 0;
+    updateCallabck = () => {
+        counter += 1;
+        const amount = counter % 3 + 1;
+        button.innerText = "checking in " + ".".repeat(amount);
+    };
+
+    const handle = setInterval(updateCallabck, 500);
+
+    stopCallback = () => {
+        clearInterval(handle);
+        button.innerText = "checked in!";
+
+        setTimeout(() => button.innerText = "check in", 1000);
+
+        const d = new Date();
+        start_time = d.getTime();
+        update_timer();
+    }
+
     navigator.geolocation.getCurrentPosition(pos => {
         loc = pos.coords.latitude + ", " + pos.coords.longitude + ", " + pos.coords.accuracy;
-        button_press(loc);
+        button_press(loc).then(stopCallback);
     }, err => {
-        button_press();
+        button_press().then(stopCallback);
     })
 }

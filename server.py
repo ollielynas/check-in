@@ -560,8 +560,6 @@ scheduler.start()
 app.run(port = 8000)
 
 
-# account_sid = 'AC39570af5f7cb29fb1469a1c63c091d51'
-# auth_token = '683a6a528c03e5088cce185570995189'
 # client = Client(account_sid, auth_token)
 
 # message = client.messages.create(

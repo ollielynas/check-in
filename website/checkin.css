@@ -6,16 +6,23 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
     margin: 0 auto;
     padding: 20px;
+    padding-top: 5.5em;
     background: white;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-header {
+.header {
     text-align: center;
     margin-bottom: 20px;
+    z-index: 2;
+    background-color: white;
 }
 
 header h1 {
@@ -29,7 +36,7 @@ main {
 
 .map {
     flex: 3;
-    height: 600px;
+    /* height: ; */
     border: 1px solid #ddd;
 }
 
@@ -69,4 +76,9 @@ main {
 .friend-list li span.time {
     color: #333;
     font-weight: bold;
+}
+
+main {
+    display: flex;
+    height: 100%;
 }

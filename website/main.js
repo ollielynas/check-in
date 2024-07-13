@@ -4,12 +4,14 @@ function start_session() {
         method: "POST"
     });
 }
-
 function end_session() {
+    document.body.setAttribute("in-session","false");
+    
     fetch("/api/end_session", {
         method: "POST"
     });
 }
+
 
 function button_press() {
     fetch("/api/button_press", {

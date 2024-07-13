@@ -643,7 +643,7 @@ def check(text):
     for user_id, username, session_start, interval, last_checkin in res:
         alert_time = datetime.strptime(last_checkin, TIME_FORMAT) + timedelta(minutes=interval+5)
         print(username, alert_time)
-        if alert_time <= datetime.now():
+        if alert_time <= datetime.now(TIMEZONE):
             print("Alerting")
             for email in cur.execute("SELECT user.email FROM supervisor JOIN user ON user.id=supervisor.supervisor_id WHERE supervisee_id = ?", [user_id]).fetchall():
                 if email is not None and email != "":

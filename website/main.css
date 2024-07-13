@@ -86,7 +86,6 @@ img {
 
 
 
-
 .big-button:active {
     background-color: rgba(55, 234, 55, 0.262);
 }
@@ -330,7 +329,7 @@ span {
 
 .in-session-content img {
     width: 12em;
-    top: -1.45em;
+    top: -1.92em;
     position: absolute;
     left: -1.31em;
     filter: none;
@@ -343,4 +342,9 @@ span {
 
 body[in-session="signed-out"] .not-signed-in {
     display: flex;
+}
+
+
+.big-button {
+    line-height: 120%;
 }

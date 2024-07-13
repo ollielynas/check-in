@@ -29,12 +29,12 @@
         </button>
         <div class="h">
             <span>check in every</span>
-        <span contenteditable="true" value="20" type="number">20</span>
+        <span onkeypress="return /^\d+$/.test(String.fromCharCode(event.charCode));" contenteditable="true" value="20" type="number">20</span>
         <span>min</span>
         </div>
         <div class="h">
         <span>for the next:</span>
-        <span contenteditable="true" value="60" type="number">60</span>
+        <span onkeypress="return /^\d+$/.test(String.fromCharCode(event.charCode));" contenteditable="true" value="60" type="number">60</span>
         <span>min</span>
         </div>
     </div>

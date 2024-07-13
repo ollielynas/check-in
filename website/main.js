@@ -151,3 +151,11 @@ async function checkIn() {
         button_press().then(stopCallback);
     })
 }
+
+
+
+function OnlyNumber(e, allowedchars) {
+    var key = e.charCode == undefined ? e.keyCode : e.charCode;
+    if ((/^[0-9]+$/.test(String.fromCharCode(key))) || key == 0 || isPassKey(key, allowedchars)) { return true; }
+    else { return false; }
+}

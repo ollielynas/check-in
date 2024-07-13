@@ -1,14 +1,15 @@
 
 
 const d = new Date();
+// let start_time = check_response(await get_press_info(getCookie("username")));
 let start_time = d.getTime();
 
-function start_session() {
+
+function start_session_home() {
+    const d = new Date();
+
     start_time = d.getTime();
-    document.body.setAttribute("in-session","true");
-    fetch("/api/start_session", {
-        method: "POST"
-    });
+    update_timer();
 }
 
 function msToTime(duration) {
@@ -25,19 +26,15 @@ function msToTime(duration) {
   }
 
 function update_timer() {
+    const d = new Date();
     let value =  d.getTime()- start_time;
-    console.log(value);
     document.getElementById("timer").innerText  = msToTime(value);
 }
 
 setInterval(update_timer, 1000); 
 
-function end_session() {
+function end_session_home() {
     document.body.setAttribute("in-session","false");
-    
-    fetch("/api/end_session", {
-        method: "POST"
-    });
 }
 
 
@@ -125,9 +122,16 @@ window.onload = () => {
     if (getCookie("token") != null) {
         document.querySelector(".sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
     }
+
+    if (am_i_in_session()) {
+        start_session_home();
+    }
 }
 
 async function checkIn() {
+    const d = new Date();
+    start_time = d.getTime();
+    update_timer();
     navigator.geolocation.getCurrentPosition(pos => {
         loc = pos.coords.latitude + ", " + pos.coords.longitude + ", " + pos.coords.accuracy;
         button_press(loc);

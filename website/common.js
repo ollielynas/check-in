@@ -49,14 +49,14 @@ window.onload = () => {
     }
 }
 
-function button_press(location) {
+async function button_press(location) {
     data = {}
 
     if (location) {
         data.location = location;
     }
 
-    fetch("/api/button_press", {
+    return await fetch("/api/button_press", {
         body: JSON.stringify(data),
         method: "POST"
     })

@@ -5,34 +5,31 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>Settings</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <link rel='stylesheet' type='text/css' media='screen' href='settings.css'>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src='main.js'></script>
     <script src='common.js'></script>
     <script src='settings.js'></script>
 </head>
-<body onload = "settingsLoad()">
+<body onload="settingsLoad()">
     <div class="header">
-        Settings
+        <img class="logo" src="logo.png"></img>
         <div class="header-button">
             <button onclick="window.location='./login.html';" class="sign-in-button"><i class="ph ph-user-switch"></i></button>   
-            <button onclick="window.location='./index.html';" class="settings"><i class="ph ph-house-line"></i></button>   
+            <button onclick="window.location='./settings.html';" class="settings"><i class="ph ph-gear"></i></button>   
             <button onclick="window.location='./FriendsCheckin.html';" class="settings"><i class="ph ph-user-list"></i></button>   
- 
         </div>
     </div>
-    
 
-    <div class="content settings">
+    <div class="contentsettings">
         <h2>Who can check on me?</h2>
-        <ul id = "supervisor-list">
+        <ul id="supervisor-list">You haven't added anyone yet</ul>
 
-        </ul>
-        
         <h2>Add someone</h2>
-        <input type="text" id = "new-supervisor-name">
-        <button onclick = "addSupervisorButtonPress()">Add someone</button>
+        <div class="add-supervisor">
+            <input type="text" id="new-supervisor-name" placeholder="Enter friend's username">
+            <button onclick="addSupervisorButtonPress()" class="add-button">Add</button>
+        </div>
     </div>
-
 </body>
 </html>

@@ -1,9 +1,37 @@
+
+
+const d = new Date();
+let start_time = d.getTime();
+
 function start_session() {
+    start_time = d.getTime();
     document.body.setAttribute("in-session","true");
     fetch("/api/start_session", {
         method: "POST"
     });
 }
+
+function msToTime(duration) {
+    var milliseconds = duration,
+      seconds = Math.floor((duration / 1000) % 60),
+      minutes = Math.floor((duration / (1000 * 60)) % 60),
+      hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+  
+    hours = (hours < 10) ? "0" + hours : hours;
+    minutes = (minutes < 10) ? "0" + minutes : minutes;
+    seconds = (seconds < 10) ? "0" + seconds : seconds;
+  
+    return hours + ":" + minutes + ":" + seconds;
+  }
+
+function update_timer() {
+    let value =  d.getTime()- start_time;
+    console.log(value);
+    document.getElementById("timer").innerText  = msToTime(value);
+}
+
+setInterval(update_timer, 1000); 
+
 function end_session() {
     document.body.setAttribute("in-session","false");
     

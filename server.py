@@ -509,6 +509,7 @@ def log_user_in(username, extend):
 
     response = redirect("/website/index.html")
     response.set_cookie("token", token, max_age=num_seconds)
+    response.set_cookie("username", username, max_age=num_seconds)
 
     return response
 

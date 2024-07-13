@@ -37,51 +37,65 @@ async function populateFriendList() {
         title.innerText = key;
         listItem.appendChild(title);
 
-        const startTime = new Date(Date.parse(friendData[key]["start"]));
-        const formattedStartTime = startTime.toLocaleString();
+        if (friendData[key] == "not in session") {
+            console.log("Not in session");
+            const notInSession = document.createElement("span");
+            notInSession.textContent = "Not in session";
 
-        const startTimeDisplay = document.createElement("span");
-        startTimeDisplay.classList.add("start-time");
-        startTimeDisplay.innerText = `Started at ${formattedStartTime}`;
-        listItem.appendChild(startTimeDisplay);
-
-        const presses = friendData[key]["presses"];
-
-        if (presses.length == 0) {
-            const info = document.createElement("span");
-            info.innerText = "Has not checked in yet";
-            listItem.appendChild(info);
+            listItem.appendChild(notInSession);
         } else {
-            const lastCheckIn = presses[presses.length - 1];
-            const time = new Date(Date.parse(lastCheckIn["timestamp"]));
-            const now = new Date();
+            const startTime = new Date(Date.parse(friendData[key]["start"]));
+            const formattedStartTime = startTime.toLocaleString();
 
-            const diff = Math.floor((now - time) / 60000);
+            const startTimeDisplay = document.createElement("span");
+            startTimeDisplay.classList.add("start-time");
+            startTimeDisplay.innerText = `Started at ${formattedStartTime}`;
+            listItem.appendChild(startTimeDisplay);
 
-            const elem = document.createElement("span");
-            elem.innerText = `Checked in ${diff} minutes ago`;
-            listItem.appendChild(elem);
+            const presses = friendData[key]["presses"];
 
-            let lastLocation = null;
-            for (press of presses) {
-                if (press["location"]) {
-                    lastLocation = press["location"];
+            if (presses.length == 0) {
+                const info = document.createElement("span");
+                info.innerText = "Has not checked in yet";
+                listItem.appendChild(info);
+            } else {
+                const lastCheckIn = presses[presses.length - 1];
+                const time = new Date(Date.parse(lastCheckIn["timestamp"]));
+                const now = new Date();
+
+                const diff = Math.floor((now - time) / 60000);
+
+                const elem = document.createElement("span");
+                elem.innerText = `Checked in ${diff} minutes ago`;
+                listItem.appendChild(elem);
+
+                let lastLocation = null;
+                for (press of presses) {
+                    if (press["location"]) {
+                        lastLocation = press["location"];
+                    }
                 }
-            }
 
-            if (lastLocation) {
-                const parts = lastLocation.split(", ");
-                console.log(parts);
+                if (lastLocation) {
+                    const parts = lastLocation.split(", ");
+                    console.log(parts);
 
-                const lat = Number.parseFloat(parts[0]);
-                const long = Number.parseFloat(parts[1]);
+                    const lat = Number.parseFloat(parts[0]);
+                    const long = Number.parseFloat(parts[1]);
+                    
+                    const marker = L.marker([lat, long]).addTo(map);
+                    marker.bindPopup(`<h3>${key}</h3>`);
+                    marker.on('mouseover', function (e) {
+                        this.openPopup();
+                    });
+                    marker.on('mouseout', function (e) {
+                        this.closePopup();
+                    });
 
-                const marker = L.marker([lat, long]).addTo(map);
-                console.log(marker);
+                    focusOn = [lat, long];
 
-                focusOn = [lat, long];
-
-                listItem.onclick = () => map.setView([lat, long], 20);
+                    listItem.onclick = () => map.setView([lat, long], 20);
+                }
             }
         }
 

@@ -12,11 +12,11 @@ function initMap() {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    populateFriendList();
+    populateFriendList(true);
 }
 
 let markers = [];
-async function populateFriendList() {
+async function populateFriendList(focus) {
     for (marker of markers) {
         map.removeLayer(marker);
     }
@@ -110,7 +110,9 @@ async function populateFriendList() {
         friendList.appendChild(listItem);
     }
 
-    map.setView(focusOn);
+    if (focus) {
+        map.setView(focusOn);
+    }
 
     /*friends.forEach(friend => {
         

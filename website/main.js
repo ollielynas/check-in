@@ -108,7 +108,11 @@ async function get_press_info(username) {
 
 windowOnLoad = async () => {
     if (getCookie("token") != null) {
-        document.querySelector(".sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
+        document.querySelector(".nav-sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
+        document.querySelector(".nav-sign-in-button").onclick = () => {
+            document.cookie='token=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            window.location.reload();
+        };
     }
 
     let resp = check_response(await get_press_info(getCookie("username")));

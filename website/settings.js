@@ -1,6 +1,6 @@
+let supervisors = [];
 async function loadSupervisors() {
-    let supervisors = check_response(await get_supervisors());
-    console.log(supervisors);
+    supervisors = check_response(await get_supervisors());
 
     let list = document.getElementById("supervisor-list");
     
@@ -24,7 +24,9 @@ async function loadSupervisors() {
             removeLink.innerText = "Remove";
             removeLink.className="";
             removeLink.onclick = () => {
-                removeSupervisorButtonPress(supervisor);
+                if (confirm("Are you sure you want to remove " + supervisor + " as a supervisor?")){
+                    removeSupervisorButtonPress(supervisor);
+                }
             }
             removeLink.href = "javascript:void(0)"
 
@@ -35,8 +37,45 @@ async function loadSupervisors() {
     }
 }
 
+async function loadEmail() {
+    let email = check_response(await (await fetch("/api/my_email")).json());
+    console.log(email);
+
+    const field = document.getElementById("new-email");
+
+    if (email === null) {
+        field.setAttribute("placeholder", "Enter emergency email")
+    } else {
+        field.setAttribute("placeholder", "");
+        field.value = email;
+    }
+}
+
+async function updateEmail() {
+    const button = document.getElementById("update-email-button");
+    button.innerText = "Updating .";
+
+    let counter = 0;
+    updateCallback = () => {
+        counter += 1;
+        const amount = counter % 3 + 1;
+        button.innerText = "Updating " + ".".repeat(amount);
+    };
+
+    const handle = setInterval(updateCallback, 500);
+
+    const email = document.getElementById("new-email").value;
+    const res = check_response(await (await fetch(`/api/set_email?email=${encodeURIComponent(email)}`, {method: "POST"})).json());
+
+    clearInterval(handle);
+    button.innerText = "Updated!";
+
+    setTimeout(() => button.innerText = "Update", 5000);
+}
+
 async function settingsLoad() {
     await loadSupervisors();
+    await loadEmail();
 }
 
 async function removeSupervisorButtonPress(name) {
@@ -47,7 +86,14 @@ async function removeSupervisorButtonPress(name) {
 async function addSupervisorButtonPress() {
     const name = document.getElementById("new-supervisor-name").value;
     res = await add_supervisor(name);
-    console.log(res);
+    console.log(res.ok);
+    console.log(supervisors);
+    if (!res.ok) {
+        alert("Supervisor username does not exist. Please enter a valid username.");
+    }
+    else {
+        alert("Supervisor added successfully!");
+    }
     document.getElementById("new-supervisor-name").value = "";
     loadSupervisors();
 }

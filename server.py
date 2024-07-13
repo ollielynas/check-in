@@ -7,20 +7,22 @@ import os
 from datetime import datetime, timedelta
 from flask_apscheduler import APScheduler
 import pytz
-# from twilio.rest import Client
+import yagmail
 
-account_sid = 'AC39570af5f7cb29fb1469a1c63c091d51'
-auth_token = '683a6a528c03e5088cce185570995189'
-client = Client(account_sid, auth_token)
-
-message = client.messages.create(
-    to='undefined'
-)
+SENDER_EMAIL_ADDRESS = {"dummyemail8001@gmail.com": "Check-in Chicken"}
+yag = yagmail.SMTP(SENDER_EMAIL_ADDRESS, oauth2_file='oauth_yagmail.json')
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 TIMEZONE = pytz.timezone("Pacific/Auckland")
 
 conn = sqlite3.connect("db/db.sqlite", check_same_thread=False)
+
+def send_email(yag, to, subject, contents):
+    print("Sending email to", to, "with subject '" + subject + "'")
+    print("=== EMAIL CONTENTS BEGIN ===")
+    print(contents)
+    print("=== EMAIL CONTENTS END ===")
+    yag.send(to=to, subject=subject, contents=contents)
 
 def setup_db():
     if not os.path.exists("./db"):
@@ -66,15 +68,25 @@ def setup_db():
                 supervisee_id INTEGER NOT NULL
     )""")
 
+    cur.execute("ALTER TABLE user ADD checkin_interval INTEGER")
+    cur.execute("ALTER TABLE user ADD session_stop STRING")
+    cur.execute("ALTER TABLE user ADD last_checkin STRING")
+    cur.execute("ALTER TABLE user ADD alerted INTEGER NOT NULL DEFAULT 0")
+    cur.execute("ALTER TABLE user ADD email STRING")
+
     conn.commit()
 
-# setup_db()
+#setup_db()
 
 app = Flask(__name__, template_folder="./website/")
 
 @app.route("/")
 def redirect_to_index():
     return redirect("/website/index.html")
+
+@app.route("/favicon.ico")
+def serve_favicon():
+    return serve_file("favicon.ico")
 
 @app.route("/website/register.html", methods = ["POST", "GET"])
 def do_registration():
@@ -84,6 +96,7 @@ def do_registration():
         username = request.form["username"]
         password = request.form["password"]
         confirm = request.form["confirm-password"]
+        email = request.form["email"]
         remember = request.form["remember"] == "on" if "remember" in request.form else False
 
         if password != confirm:
@@ -98,7 +111,7 @@ def do_registration():
         if res.fetchone() is not None:
             return render_template("register.html", errors = ["Username is already in use!"])
         
-        cur.execute("INSERT INTO user (username, password_hash) VALUES (?,?)", [username, password_hash])
+        cur.execute("INSERT INTO user (username, password_hash, email) VALUES (?,?,?)", [username, password_hash,email])
 
         conn.commit()
 
@@ -144,9 +157,11 @@ def start_session():
 
         return res
     
+    duration = int(request.args.get("duration"))
+    interval = int(request.args.get("interval"))
+    
     cur = conn.cursor()
     (in_session,) = cur.execute("SELECT (in_session) FROM user WHERE id = ?", [user]).fetchone()
-
 
     if in_session:
         return Response(
@@ -156,8 +171,12 @@ def start_session():
         )
     
     start_time = datetime.now(TIMEZONE).strftime(TIME_FORMAT)
+    end_time = (datetime.now(TIMEZONE) + timedelta(minutes=duration)).strftime(TIME_FORMAT)
 
-    cur.execute("UPDATE user SET in_session = 1, session_start_time = ? WHERE id = ?", [start_time, user])
+    cur.execute(
+        "UPDATE user SET in_session = 1, session_start_time = ?, checkin_interval = ?, session_stop = ?, last_checkin = ?, alerted = 0 WHERE id = ?", 
+        [start_time, interval, end_time, start_time, user]
+    )
 
     conn.commit()
 
@@ -231,6 +250,8 @@ def button_press():
     timestamp = datetime.now(TIMEZONE).strftime(TIME_FORMAT)
 
     cur.execute("INSERT INTO button_press (user_id, timestamp, location) VALUES (?, ?, ?)", [user, timestamp, location])
+    cur.execute("UPDATE user SET last_checkin = ?, alerted = 0 WHERE id = ?", [timestamp, user])
+
     conn.commit()
 
     return Response(json.dumps({"result": "success"}), 200, mimetype="application/json")
@@ -254,6 +275,49 @@ def is_in_session():
     (in_session,) = cur.execute("SELECT (in_session) FROM user WHERE id = ?", [user]).fetchone()
 
     return Response(json.dumps({"result": bool(in_session)}), 200, mimetype="application/json")
+
+@app.route("/api/my_email", methods = ["GET"])
+def get_my_email():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    cur = conn.cursor()
+    (email,) = cur.execute("SELECT (email) FROM user WHERE id = ?", [user]).fetchone()
+
+    return Response(json.dumps({"result": email}), 200, mimetype="application/json")
+
+@app.route("/api/set_email", methods = ["POST"])
+def set_my_email():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    email = request.args["email"]
+    
+    cur = conn.cursor()
+    cur.execute("UPDATE user SET email = ? WHERE id = ?", [email, user])
+    conn.commit()
+
+    return Response(json.dumps({"result": email}), 200, mimetype="application/json")
 
 @app.route("/api/add_supervisor", methods = ["POST"])
 def add_supervisor():
@@ -401,7 +465,7 @@ def get_presses():
 
     cur = conn.cursor()
 
-    username_res = cur.execute("SELECT id, in_session, session_start_time FROM user WHERE username = ?", [username]).fetchone()
+    username_res = cur.execute("SELECT id, in_session, session_start_time, session_stop, checkin_interval FROM user WHERE username = ?", [username]).fetchone()
 
     if username_res is None:
         res = Response(
@@ -412,7 +476,7 @@ def get_presses():
 
         return res
 
-    (user_id, in_session, start_time) = username_res
+    (user_id, in_session, start_time, stop_time, checkin_interval) = username_res
 
     allowed = True
     if user_id != user:
@@ -442,6 +506,8 @@ def get_presses():
 
         res = {
             "start": start_time,
+            "stop": stop_time,
+            "interval": checkin_interval,
             "presses": presses
         }
 
@@ -464,16 +530,18 @@ def get_all_presses():
 
     cur = conn.cursor()
 
-    username_res = cur.execute("SELECT user.id, user.username, user.in_session, user.session_start_time FROM supervisor JOIN user ON user.id=supervisor.supervisee_id WHERE supervisor_id = ?", [user]).fetchall()
+    username_res = cur.execute("SELECT user.id, user.username, user.in_session, user.session_start_time, user.session_stop, user.checkin_interval FROM supervisor JOIN user ON user.id=supervisor.supervisee_id WHERE supervisor_id = ?", [user]).fetchall()
 
     res = {}
 
-    for user_id, username, in_session, session_start in username_res:
+    for user_id, username, in_session, session_start, session_stop, interval in username_res:
         if not in_session:
             res[username] = "not in session"
         else:
             data = {}
             data["start"] = session_start
+            data["interval"] = interval
+            data["stop"] = session_stop
 
             presses = cur.execute("SELECT timestamp, location FROM button_press WHERE user_id = ? AND timestamp >= ?", [user_id, session_start]).fetchall()
             presses = [
@@ -550,21 +618,46 @@ def get_id_from_username(username):
     if res is None: return None
     return res[0]
 
+ALERT_EMAIL_SUBJECT = "Check-in Chicken Alert"
+ALERT_EMAIL_CONTENTS = """
+Your friend, {name} has not checked-in on Check-in Chicken. Give 'em a ring.
+
+Sincrerest Regard,
+
+Charlie
+"""
 
 def check(text):
-    ...
+    cur = conn.cursor()
+
+    # Stop finished session
+    now = datetime.now(TIMEZONE).strftime(TIME_FORMAT)
+    #finished_sessions = cur.execute("SELECT id, username FROM user WHERE session_stop <= ?", [now]).fetchall()
+    #print(finished_sessions)
+    cur.execute("UPDATE user SET in_session = 0 WHERE session_stop <= ? AND in_session = 1 AND alerted = 0", [now])
+
+    conn.commit()
+
+    res = cur.execute("SELECT id, username, session_start_time, checkin_interval, last_checkin FROM user WHERE alerted = 0 AND in_session = 1").fetchall()
+    
+    for user_id, username, session_start, interval, last_checkin in res:
+        alert_time = datetime.strptime(last_checkin, TIME_FORMAT) + timedelta(minutes=interval+5)
+        print(username, alert_time)
+        if alert_time <= datetime.now():
+            print("Alerting")
+            for email in cur.execute("SELECT user.email FROM supervisor JOIN user ON user.id=supervisor.supervisor_id WHERE supervisee_id = ?", [user_id]).fetchall():
+                if email is not None and email != "":
+                    try:
+                        send_email(yag, email, ALERT_EMAIL_SUBJECT, ALERT_EMAIL_CONTENTS.format(name=username))
+                    except:
+                        pass
+            
+            cur.execute("UPDATE user SET alerted = 1 WHERE id = ?", [user_id])
+
+    conn.commit()
 
 scheduler = APScheduler()
 scheduler.add_job(func=check, args=['job run'], trigger='interval', id='job', seconds=5)
 scheduler.start()
-app.run(port = 8000)
 
-
-# client = Client(account_sid, auth_token)
-
-# message = client.messages.create(
-#     body="Join Earth's mightiest heroes. Like Kevin Bacon.",
-#     to='+0272263323'
-# )
-
-# print(message.body)
+#send_email(yag, "anatol.coen@gmail.com", "Test", "Test")

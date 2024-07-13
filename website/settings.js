@@ -1,6 +1,6 @@
+let supervisors = [];
 async function loadSupervisors() {
-    let supervisors = check_response(await get_supervisors());
-    console.log(supervisors);
+    supervisors = check_response(await get_supervisors());
 
     let list = document.getElementById("supervisor-list");
     
@@ -23,7 +23,9 @@ async function loadSupervisors() {
             const removeLink = document.createElement("a");
             removeLink.innerText = "<i class=\"ph ph-trash\"></i>";
             removeLink.onclick = () => {
-                removeSupervisorButtonPress(supervisor);
+                if (confirm("Are you sure you want to remove " + supervisor + " as a supervisor?")){
+                    removeSupervisorButtonPress(supervisor);
+                }
             }
             removeLink.href = "javascript:void(0)"
 
@@ -46,7 +48,14 @@ async function removeSupervisorButtonPress(name) {
 async function addSupervisorButtonPress() {
     const name = document.getElementById("new-supervisor-name").value;
     res = await add_supervisor(name);
-    console.log(res);
+    console.log(res.ok);
+    console.log(supervisors);
+    if (!res.ok) {
+        alert("Supervisor username does not exist. Please enter a valid username.");
+    }
+    else {
+        alert("Supervisor added successfully!");
+    }
     document.getElementById("new-supervisor-name").value = "";
     loadSupervisors();
 }

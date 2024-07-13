@@ -73,6 +73,10 @@ async function updateEmail() {
 }
 
 async function settingsLoad() {
+    if (getCookie("token") != null) {
+        document.querySelector(".sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
+    }
+
     await loadSupervisors();
     await loadEmail();
 }

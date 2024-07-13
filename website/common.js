@@ -1,5 +1,5 @@
-function start_session() {
-    fetch("/api/start_session", {
+async function start_session(interval, duration) {
+    await fetch(`/api/start_session?interval=${interval}&duration=${duration}`, {
         method: "POST"
     });
 }

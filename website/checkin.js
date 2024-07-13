@@ -12,16 +12,22 @@ function initMap() {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    /*friends.forEach(friend => {
-        const marker = L.marker([friend.lat, friend.lng]).addTo(map);
-        marker.bindPopup(`<h3>${friend.name}</h3><p>Last check-in: ${friend.checkInTime}</p>`);
-    });*/
-
     populateFriendList();
 }
 
+let markers = [];
 async function populateFriendList() {
+    for (marker of markers) {
+        map.removeLayer(marker);
+    }
+    markers = [];
+
     const friendList = document.getElementById('friends');
+    document.getElementById("last-update").innerText = new Date(Date.now()).toLocaleTimeString();
+    
+    while (friendList.children.length != 0) {
+        friendList.removeChild(friendList.children[0]);
+    }
 
     const friendData = check_response(await get_all_presses());
     console.log(friendData);
@@ -92,6 +98,8 @@ async function populateFriendList() {
                         this.closePopup();
                     });
 
+                    markers.push(marker);
+
                     focusOn = [lat, long];
 
                     listItem.onclick = () => map.setView([lat, long], 20);
@@ -114,3 +122,5 @@ async function populateFriendList() {
 document.addEventListener('DOMContentLoaded', (event) => {
     initMap();
 });
+
+setInterval(populateFriendList, 60000);

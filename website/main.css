@@ -275,9 +275,9 @@ span {
   border: 1px solid #266DB6;
   box-sizing: border-box;
   color: #00132C;
-  font-family: "Avenir Next LT W01 Bold",sans-serif;
+  /* font-family: "Avenir Next LT W01 Bold",sans-serif; */
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 24px;
   padding: 16px 23px;
   position: relative;
@@ -317,4 +317,12 @@ span {
   .button-51 {
     padding: 16px 32px;
   }
+}
+
+.in-session-content img {
+    width: 8em;
+    top: -0.8em;
+    position: absolute;
+    left: -1.8em;
+    filter: none;
 }

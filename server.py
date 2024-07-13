@@ -5,6 +5,7 @@ import argon2
 import json
 import os
 from datetime import datetime, timedelta
+from flask_apscheduler import APScheduler
 import pytz
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -541,23 +542,10 @@ def get_id_from_username(username):
     return res[0]
 
 
-#LOCATION STUFF
-# Store user locations in memory (for simplicity, use a database in production)
-#user_locations = {}
+def check(text):
+    ...
 
-# @app.route('/update_location', methods=['POST'])
-# def update_location():
-#     data = request.get_json()
-#     user_id = "example_user"  # Replace with actual user ID from session/auth
-#     user_locations[user_id] = (data['latitude'], data['longitude'])
-#     return jsonify(success=True)
-
-# @app.route('/get_location/<user_id>', methods=['GET'])
-# def get_location(user_id):
-#     location = user_locations.get(user_id)
-#     if location:
-#         return jsonify(latitude=location[0], longitude=location[1])
-#     return jsonify(error="User not found"), 404
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
+scheduler = APScheduler()
+scheduler.add_job(func=check, args=['job run'], trigger='interval', id='job', seconds=5)
+scheduler.start()
+app.run(port = 8000)

@@ -12,16 +12,22 @@ function initMap() {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    /*friends.forEach(friend => {
-        const marker = L.marker([friend.lat, friend.lng]).addTo(map);
-        marker.bindPopup(`<h3>${friend.name}</h3><p>Last check-in: ${friend.checkInTime}</p>`);
-    });*/
-
     populateFriendList();
 }
 
+let markers = [];
 async function populateFriendList() {
+    for (marker of markers) {
+        map.removeLayer(marker);
+    }
+    markers = [];
+
     const friendList = document.getElementById('friends');
+    document.getElementById("last-update").innerText = new Date(Date.now()).toLocaleTimeString();
+    
+    while (friendList.children.length != 0) {
+        friendList.removeChild(friendList.children[0]);
+    }
 
     const friendData = check_response(await get_all_presses());
     console.log(friendData);
@@ -63,7 +69,7 @@ async function populateFriendList() {
                 const time = new Date(Date.parse(lastCheckIn["timestamp"]));
                 const now = new Date();
 
-                const diff = Math.floor((now - time) / 60000);
+                const diff = Math.max(0, Math.floor((now - time) / 60000));
 
                 const elem = document.createElement("span");
                 elem.innerText = `Checked in ${diff} minutes ago`;
@@ -82,7 +88,7 @@ async function populateFriendList() {
 
                     const lat = Number.parseFloat(parts[0]);
                     const long = Number.parseFloat(parts[1]);
-                    
+
                     const marker = L.marker([lat, long]).addTo(map);
                     marker.bindPopup(`<h3>${key}</h3>`);
                     marker.on('mouseover', function (e) {
@@ -91,6 +97,8 @@ async function populateFriendList() {
                     marker.on('mouseout', function (e) {
                         this.closePopup();
                     });
+
+                    markers.push(marker);
 
                     focusOn = [lat, long];
 
@@ -114,3 +122,5 @@ async function populateFriendList() {
 document.addEventListener('DOMContentLoaded', (event) => {
     initMap();
 });
+
+setInterval(populateFriendList, 60000);

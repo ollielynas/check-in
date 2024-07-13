@@ -1,11 +1,12 @@
 
 
 const d = new Date();
-// let start_time = check_response(await get_press_info(getCookie("username")));
+//let start_time = check_response(await get_press_info(getCookie("username")));
 let start_time = d.getTime();
 
 
 function start_session_home() {
+    document.body.setAttribute("in-session","true");
     const d = new Date();
 
     start_time = d.getTime();
@@ -31,7 +32,7 @@ function update_timer() {
     document.getElementById("timer").innerText  = msToTime(value);
 }
 
-setInterval(update_timer, 1000); 
+setInterval(update_timer, 100); 
 
 function end_session_home() {
     document.body.setAttribute("in-session","false");
@@ -86,27 +87,6 @@ async function get_press_info(username) {
     return (await (await fetch(`/api/presses?username=${encodeURIComponent(username)}`)).json());
 }
 
-function getCookie(name) {
-    var dc = document.cookie;
-    var prefix = name + "=";
-    var begin = dc.indexOf("; " + prefix);
-    if (begin == -1) {
-        begin = dc.indexOf(prefix);
-        if (begin != 0) return null;
-    }
-    else
-    {
-        begin += 2;
-        var end = document.cookie.indexOf(";", begin);
-        if (end == -1) {
-        end = dc.length;
-        }
-    }
-    // because unescape has been deprecated, replaced with decodeURI
-    //return unescape(dc.substring(begin + prefix.length, end));
-    return decodeURI(dc.substring(begin + prefix.length, end));
-} 
-
 function doSomething() {
     var myCookie = getCookie("MyCookie");
 
@@ -118,24 +98,64 @@ function doSomething() {
     }
 }
 
-window.onload = () => {
+windowOnLoad = async () => {
     if (getCookie("token") != null) {
         document.querySelector(".sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
     }
 
-    if (am_i_in_session()) {
+    let resp = check_response(await get_press_info(getCookie("username")));
+
+    if (resp !== "not in session") {
         start_session_home();
+
+        start_time = Date.parse(resp["start"]);
+
+        console.log(resp);
+        if (resp["presses"].length != 0) {
+            start_time = Date.parse(resp["presses"][resp["presses"].length - 1]["timestamp"]);
+            console.log(resp["presses"][resp["presses"].length - 1]["timestamp"]);
+        }
+
+        update_timer();
     }
 }
 
 async function checkIn() {
-    const d = new Date();
-    start_time = d.getTime();
-    update_timer();
+    const button = document.getElementById("checkin-button");
+    button.innerText = "checking in .";
+
+    let counter = 0;
+    updateCallabck = () => {
+        counter += 1;
+        const amount = counter % 3 + 1;
+        button.innerText = "checking in " + ".".repeat(amount);
+    };
+
+    const handle = setInterval(updateCallabck, 500);
+
+    stopCallback = () => {
+        clearInterval(handle);
+        button.innerText = "checked in!";
+
+        setTimeout(() => button.innerText = "check in", 1000);
+
+        const d = new Date();
+        start_time = d.getTime();
+        update_timer();
+    }
+
     navigator.geolocation.getCurrentPosition(pos => {
         loc = pos.coords.latitude + ", " + pos.coords.longitude + ", " + pos.coords.accuracy;
-        button_press(loc);
+        button_press(loc).then(stopCallback);
     }, err => {
-        button_press();
+        button_press().then(stopCallback);
     })
+}
+
+
+
+function OnlyNumber(e, allowedchars) {
+    var key = e.charCode == undefined ? e.keyCode : e.charCode;
+    if ((/^[0-9]+$/.test(String.fromCharCode(key))) || key == 0 || isPassKey(key, allowedchars)) { return true; }
+    else { return false; }
 }

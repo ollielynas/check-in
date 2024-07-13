@@ -1,5 +1,4 @@
 function start_session() {
-    document.body.setAttribute("in-session","true");
     fetch("/api/start_session", {
         method: "POST"
     });
@@ -7,25 +6,10 @@ function start_session() {
 
 
 function getCookie(name) {
-    var dc = document.cookie;
-    var prefix = name + "=";
-    var begin = dc.indexOf("; " + prefix);
-    if (begin == -1) {
-        begin = dc.indexOf(prefix);
-        if (begin != 0) return null;
-    }
-    else
-    {
-        begin += 2;
-        var end = document.cookie.indexOf(";", begin);
-        if (end == -1) {
-        end = dc.length;
-        }
-    }
-    // because unescape has been deprecated, replaced with decodeURI
-    //return unescape(dc.substring(begin + prefix.length, end));
-    return decodeURI(dc.substring(begin + prefix.length, end));
-} 
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
 
 function doSomething() {
     var myCookie = getCookie("MyCookie");
@@ -50,14 +34,14 @@ window.onload = () => {
     }
 }
 
-function button_press(location) {
+async function button_press(location) {
     data = {}
 
     if (location) {
         data.location = location;
     }
 
-    fetch("/api/button_press", {
+    return await fetch("/api/button_press", {
         body: JSON.stringify(data),
         method: "POST"
     })
@@ -102,5 +86,5 @@ async function get_press_info(username) {
 }
 
 async function get_all_presses() {
-    return (await (await fetch(`/api/all_presses`)).json());
+    return (await (await fetch(`/api/all_presses`, {cache: "no-store"})).json());
 }

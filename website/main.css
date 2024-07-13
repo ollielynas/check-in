@@ -25,6 +25,10 @@ html body {
 
 }
 
+.content{
+    font-family: "Roboto";
+}
+
 h1 {
     font-size: 3em;
 }

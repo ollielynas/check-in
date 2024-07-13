@@ -641,7 +641,7 @@ def check(text):
     res = cur.execute("SELECT id, username, session_start_time, checkin_interval, last_checkin FROM user WHERE alerted = 0 AND in_session = 1").fetchall()
     
     for user_id, username, session_start, interval, last_checkin in res:
-        alert_time = datetime.strptime(last_checkin, TIME_FORMAT).astimezone(TIMEZONE) + timedelta(minutes=interval+5)
+        alert_time = datetime.strptime(last_checkin + "+12:00", TIME_FORMAT + "%z") + timedelta(minutes=interval+5)
         print(username, alert_time)
         if alert_time <= datetime.now(TIMEZONE):
             print("Alerting")

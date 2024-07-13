@@ -7,6 +7,15 @@ import os
 from datetime import datetime, timedelta
 from flask_apscheduler import APScheduler
 import pytz
+# from twilio.rest import Client
+
+account_sid = 'AC39570af5f7cb29fb1469a1c63c091d51'
+auth_token = '683a6a528c03e5088cce185570995189'
+client = Client(account_sid, auth_token)
+
+message = client.messages.create(
+    to='undefined'
+)
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 TIMEZONE = pytz.timezone("Pacific/Auckland")
@@ -549,3 +558,15 @@ scheduler = APScheduler()
 scheduler.add_job(func=check, args=['job run'], trigger='interval', id='job', seconds=5)
 scheduler.start()
 app.run(port = 8000)
+
+
+# account_sid = 'AC39570af5f7cb29fb1469a1c63c091d51'
+# auth_token = '683a6a528c03e5088cce185570995189'
+# client = Client(account_sid, auth_token)
+
+# message = client.messages.create(
+#     body="Join Earth's mightiest heroes. Like Kevin Bacon.",
+#     to='+0272263323'
+# )
+
+# print(message.body)

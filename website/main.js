@@ -87,16 +87,6 @@ async function get_press_info(username) {
     return (await (await fetch(`/api/presses?username=${encodeURIComponent(username)}`)).json());
 }
 
-function doSomething() {
-    var myCookie = getCookie("MyCookie");
-
-    if (myCookie == null) {
-        // do cookie doesn't exist stuff;
-    }
-    else {
-        // do cookie exists stuff
-    }
-}
 
 windowOnLoad = async () => {
     if (getCookie("token") != null) {

@@ -21,7 +21,8 @@ async function loadSupervisors() {
             elem.classList.add("supervisor-name");
 
             const removeLink = document.createElement("a");
-            removeLink.innerText = "<i class=\"ph ph-trash\"></i>";
+            removeLink.innerText = "Remove";
+            removeLink.className="";
             removeLink.onclick = () => {
                 removeSupervisorButtonPress(supervisor);
             }

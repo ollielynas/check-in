@@ -223,7 +223,7 @@ body[in-session="signed-out"] .out-session-content {
 .out-session-content button {
     background-color: transparent;
     border: none;
-    font-size: 3em;
+    font-size: 2em;
 }
 
 
@@ -252,7 +252,7 @@ span {
 }
 
 .out-session-content span {
-    font-size: 2em;
+    font-size: 1em;
 }
 
 .cancel-button {

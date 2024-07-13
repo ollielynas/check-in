@@ -58,7 +58,7 @@ def setup_db():
 
     conn.commit()
 
-setup_db()
+# setup_db()
 
 app = Flask(__name__, template_folder="./website/")
 

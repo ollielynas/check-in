@@ -126,3 +126,12 @@ window.onload = () => {
         document.querySelector(".sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
     }
 }
+
+async function checkIn() {
+    navigator.geolocation.getCurrentPosition(pos => {
+        loc = pos.coords.latitude + ", " + pos.coords.longitude + ", " + pos.coords.accuracy;
+        button_press(loc);
+    }, err => {
+        button_press();
+    })
+}

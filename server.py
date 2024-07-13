@@ -206,7 +206,7 @@ def button_press():
 
     if not in_session:
         return Response(
-            json.dumps({"error": ""}),
+            json.dumps({"error": "NOT_IN_SESSION"}),
             400,
             mimetype="application/json"
         )
@@ -434,6 +434,49 @@ def get_presses():
             "start": start_time,
             "presses": presses
         }
+
+    return Response(json.dumps({"result": res}), 200, mimetype="application/json")
+
+@app.route("/api/all_presses", methods = ["GET"])
+def get_all_presses():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+
+    cur = conn.cursor()
+
+    username_res = cur.execute("SELECT user.id, user.username, user.in_session, user.session_start_time FROM supervisor JOIN user ON user.id=supervisor.supervisee_id WHERE supervisor_id = ?", [user]).fetchall()
+
+    res = {}
+
+    for user_id, username, in_session, session_start in username_res:
+        if not in_session:
+            res[username] = "not in session"
+        else:
+            data = {}
+            data["start"] = session_start
+
+            presses = cur.execute("SELECT timestamp, location FROM button_press WHERE user_id = ? AND timestamp >= ?", [user_id, session_start]).fetchall()
+            presses = [
+                {
+                    "timestamp": timestamp,
+                    "location": location
+                }
+                for (timestamp, location) in presses
+            ]
+
+            data["presses"] = presses
+
+            res[username] = data
 
     return Response(json.dumps({"result": res}), 200, mimetype="application/json")
 

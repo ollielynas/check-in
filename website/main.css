@@ -80,13 +80,13 @@ img {
     margin: 0.1em;
 }
 
-/* 
+
 .big-button {
     font-size: 3em;
     background-color: white;
     border: solid black 1.5px;
     padding: 0.4em;
-} */
+}
 
 .big-button:active {
     background-color: rgba(55, 234, 55, 0.262);

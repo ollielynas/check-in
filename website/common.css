@@ -1,0 +1,32 @@
+.nav-button {
+    cursor: pointer;
+}
+
+.nav-button:hover::after {
+    display: block;
+    position: absolute;
+    border: 1px solid black;
+    background: #eee;
+    padding: .25em;
+    font-size: .5em;
+}
+
+.nav-settings:hover::after {
+    content: "Settings";
+}
+
+.nav-home:hover::after {
+    content: "Home";
+}
+
+.nav-map:hover::after {
+    content: "Map";
+}
+
+.nav-sign-in-button:hover::after {
+    content: "Sign In";
+}
+
+.nav-sign-in-button:has(.ph-sign-out):hover::after {
+    content: "Log Out" !important;
+}

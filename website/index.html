@@ -5,6 +5,7 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>Check In</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
     <script src='main.js'></script>
 </head>
@@ -12,38 +13,40 @@
 
 
     <div class="header">
-        check-in
+        <img class="logo" src="logo.png"></img>
         <div class="header-button">
-            <button onclick="window.location='./login.html';" class="sign-in-button">sign in</button>   
-            <button onclick="window.location='./settings.html';" class="settings">settings</button>   
+            <button onclick="window.location='./login.html';" class="sign-in-button"><i class="ph ph-user-switch"></i></button>   
+            <button onclick="window.location='./settings.html';" class="settings"><i class="ph ph-gear"></i></button>   
         </div>
     </div>
     <div class="content">
         <div class="out-session-content">
-        <button onclick="start_session()" class="start-session big-button">
+        <button onclick="start_session()" class="start-session button-23">
             Start Session
         </button>
         <div class="h">
-        remind me every:
-        <input value="20" type="number"></input>
-        min
+        <span>remind me every:</span>
+        <span contenteditable="true" value="20" type="number">20</span>
+        <span>min</span>
         </div>
         <div class="h">
-        for the next:
-        <input value="60" type="number"></input>
-        min
+        <span>for the next:</span>
+        <span contenteditable="true" value="60" type="number">60</span>
+        <span>min</span>
         </div>
     </div>
         <div class="in-session-content">
-            it has been xxx amount of time since you last clicked ok
+            <h1>00:00:00</h1>
+            <i>Since you last checked in</i> 
+            <br>    
             <br>
             <br>
-            <br>
-        <button class="confirm-ok big-button">
-            im ok
+        <button class="confirm-ok button-9">
+            check in
         </button>
     </div>
     </div>
+
 
 
 </body>

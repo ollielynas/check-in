@@ -47,5 +47,6 @@ async function addSupervisorButtonPress() {
     const name = document.getElementById("new-supervisor-name").value;
     res = await add_supervisor(name);
     console.log(res);
+    document.getElementById("new-supervisor-name").value = "";
     loadSupervisors();
 }

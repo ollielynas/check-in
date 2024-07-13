@@ -48,13 +48,13 @@ async function button_press(location) {
 }
 
 async function add_supervisor(username) {
-    await fetch(`/api/add_supervisor?username=${encodeURIComponent(username)}`, {
+    return await fetch(`/api/add_supervisor?username=${encodeURIComponent(username)}`, {
         "method": "POST"
     })
 }
 
 async function remove_supervisor(username) {
-    await fetch(`/api/remove_supervisor?username=${encodeURIComponent(username)}`, {
+    return await fetch(`/api/remove_supervisor?username=${encodeURIComponent(username)}`, {
         "method": "POST"
     })
 }

@@ -30,3 +30,7 @@
 .nav-sign-in-button:has(.ph-sign-out):hover::after {
     content: "Log Out" !important;
 }
+
+.nav-tips:hover::after {
+    content: "Tips";
+}

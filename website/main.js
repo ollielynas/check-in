@@ -1,11 +1,12 @@
 
 
 const d = new Date();
-// let start_time = check_response(await get_press_info(getCookie("username")));
+//let start_time = check_response(await get_press_info(getCookie("username")));
 let start_time = d.getTime();
 
 
 function start_session_home() {
+    document.body.setAttribute("in-session","true");
     const d = new Date();
 
     start_time = d.getTime();
@@ -31,7 +32,7 @@ function update_timer() {
     document.getElementById("timer").innerText  = msToTime(value);
 }
 
-setInterval(update_timer, 1000); 
+setInterval(update_timer, 100); 
 
 function end_session_home() {
     document.body.setAttribute("in-session","false");
@@ -118,13 +119,17 @@ function doSomething() {
     }
 }
 
-window.onload = () => {
+windowOnLoad = async () => {
     if (getCookie("token") != null) {
         document.querySelector(".sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
     }
 
-    if (am_i_in_session()) {
+    let resp = check_response(await get_press_info(getCookie("username")));
+
+    if (resp !== "not in session") {
         start_session_home();
+        start_time = Date.parse(resp["start"]);
+        update_timer();
     }
 }
 

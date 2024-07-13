@@ -134,8 +134,9 @@ windowOnLoad = async () => {
 function updateCheckinTime() {
     let time = start_time + interval * 60000;
     let time_str = new Date(time).toLocaleTimeString();
+    let time_without_seconds = time_str.replace(/:\d{2}$/, '');
 
-    document.getElementById("checkin-time").innerText = time_str;
+    document.getElementById("checkin-time").innerText = time_without_seconds;
 }
 
 async function checkIn() {

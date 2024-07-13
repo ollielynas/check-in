@@ -75,6 +75,7 @@ async function populateFriendList() {
 
                 const lat = Number.parseFloat(parts[0]);
                 const long = Number.parseFloat(parts[1]);
+                //console.log("the lat is "+ lat.toString + "and the long is " + long.toString);
 
                 const marker = L.marker([lat, long]).addTo(map);
                 console.log(marker);

@@ -47,6 +47,7 @@ main {
     background: #fafafa;
     border: 1px solid #ddd;
     border-radius: 5px;
+    overflow-y: scroll;
 }
 
 .friend-list h2 {

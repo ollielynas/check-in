@@ -329,10 +329,10 @@ span {
 }
 
 .in-session-content img {
-    width: 12em;
-    top: -1.45em;
+    width: 20em;
+    top: -3.2em;
     position: absolute;
-    left: -1.31em;
+    left: -2.3em;
     filter: none;
 }
 

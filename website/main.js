@@ -48,6 +48,8 @@ function update_timer() {
     if (Date.now() >= session_end_time) {
         end_session_home();
         session_end_time = start_time + 1000000000000;
+
+        setTimeout(() => window.location.reload(), 5000);
     }
 }
 
@@ -123,6 +125,10 @@ windowOnLoad = async () => {
         start_time = Date.parse(resp["start"]);
         session_end_time = Date.parse(resp["stop"]);
         interval = resp["interval"];
+
+        if (resp["alerted"]) {
+            session_end_time += 1000000000000;
+        }
 
         console.log(resp);
         if (resp["presses"].length != 0) {

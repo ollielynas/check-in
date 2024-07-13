@@ -53,8 +53,17 @@ async function populateFriendList(focus) {
             const startTime = new Date(Date.parse(friendData[key]["start"]));
             const formattedStartTime = startTime.toLocaleString();
 
+            const lastCheckin = Date.parse(friendData[key]["last_checkin"]);
+            const expiry = lastCheckin + 60 * 1000 * friendData[key]["interval"];
+            const expired = Date.now() >= expiry;
+
             const startTimeDisplay = document.createElement("span");
             startTimeDisplay.classList.add("start-time");
+
+            if (expired) {
+                title.classList.add("missing-user");
+            }
+
             startTimeDisplay.innerText = `Started at ${formattedStartTime}`;
             listItem.appendChild(startTimeDisplay);
 

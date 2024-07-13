@@ -128,7 +128,15 @@ windowOnLoad = async () => {
 
     if (resp !== "not in session") {
         start_session_home();
+
         start_time = Date.parse(resp["start"]);
+
+        console.log(resp);
+        if (resp["presses"].length != 0) {
+            start_time = Date.parse(resp["presses"][resp["presses"].length - 1]["timestamp"]);
+            console.log(resp["presses"][resp["presses"].length - 1]["timestamp"]);
+        }
+
         update_timer();
     }
 }

@@ -63,7 +63,7 @@ async function populateFriendList() {
                 const time = new Date(Date.parse(lastCheckIn["timestamp"]));
                 const now = new Date();
 
-                const diff = Math.floor((now - time) / 60000);
+                const diff = Math.max(0, Math.floor((now - time) / 60000));
 
                 const elem = document.createElement("span");
                 elem.innerText = `Checked in ${diff} minutes ago`;
@@ -82,7 +82,7 @@ async function populateFriendList() {
 
                     const lat = Number.parseFloat(parts[0]);
                     const long = Number.parseFloat(parts[1]);
-                    
+
                     const marker = L.marker([lat, long]).addTo(map);
                     marker.bindPopup(`<h3>${key}</h3>`);
                     marker.on('mouseover', function (e) {

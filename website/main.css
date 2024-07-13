@@ -247,3 +247,13 @@ span {
     border: solid black 1.5px !important;
     padding: 0.4em;
 }
+
+@media screen and (orientation:landscape) {
+    .in-session-content {
+        left: 50%;
+        right: 50%;
+        min-width: max-content;
+        transform: translate(-50%,0);
+        
+    }
+}

@@ -3,7 +3,20 @@
 const d = new Date();
 //let start_time = check_response(await get_press_info(getCookie("username")));
 let start_time = d.getTime();
+let session_end_time = start_time + 1000000000000;
+let interval = 20;
 
+function get_params_and_start_session() {
+    const intervalp = Number.parseInt(document.getElementById("session-interval").innerText);
+    const durationp = Number.parseInt(document.getElementById("session-duration").innerText);
+
+
+    start_session(intervalp, durationp).then(res => {
+        interval = intervalp;
+        session_end_time = Date.now() + durationp * 60 * 1000;
+        updateCheckinTime();
+    });
+}
 
 function start_session_home() {
     document.body.setAttribute("in-session","true");
@@ -11,6 +24,7 @@ function start_session_home() {
 
     start_time = d.getTime();
     update_timer();
+    updateCheckinTime();
 }
 
 function msToTime(duration) {
@@ -30,6 +44,11 @@ function update_timer() {
     const d = new Date();
     let value =  d.getTime()- start_time;
     document.getElementById("timer").innerText  = msToTime(value);
+
+    if (Date.now() >= session_end_time) {
+        end_session_home();
+        session_end_time = start_time + 1000000000000;
+    }
 }
 
 setInterval(update_timer, 100); 
@@ -87,17 +106,6 @@ async function get_press_info(username) {
     return (await (await fetch(`/api/presses?username=${encodeURIComponent(username)}`)).json());
 }
 
-function doSomething() {
-    var myCookie = getCookie("MyCookie");
-
-    if (myCookie == null) {
-        // do cookie doesn't exist stuff;
-    }
-    else {
-        // do cookie exists stuff
-    }
-}
-
 windowOnLoad = async () => {
     if (getCookie("token") != null) {
         document.querySelector(".sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
@@ -109,6 +117,8 @@ windowOnLoad = async () => {
         start_session_home();
 
         start_time = Date.parse(resp["start"]);
+        session_end_time = Date.parse(resp["stop"]);
+        interval = resp["interval"];
 
         console.log(resp);
         if (resp["presses"].length != 0) {
@@ -117,7 +127,15 @@ windowOnLoad = async () => {
         }
 
         update_timer();
+        updateCheckinTime();
     }
+}
+
+function updateCheckinTime() {
+    let time = start_time + interval * 60000;
+    let time_str = new Date(time).toLocaleTimeString();
+
+    document.getElementById("checkin-time").innerText = time_str;
 }
 
 async function checkIn() {
@@ -137,11 +155,13 @@ async function checkIn() {
         clearInterval(handle);
         button.innerText = "checked in!";
 
-        setTimeout(() => button.innerText = "check in", 1000);
+        setTimeout(() => button.innerText = "check in", 5000);
 
         const d = new Date();
         start_time = d.getTime();
         update_timer();
+
+        updateCheckinTime();
     }
 
     navigator.geolocation.getCurrentPosition(pos => {

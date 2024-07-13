@@ -8,8 +8,9 @@
     <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src='main.js'></script>
+    <script src='settings.js'></script>
 </head>
-<body>
+<body onload = "settingsLoad()">
     <div class="header">
         Settings
         <div class="header-button">
@@ -22,8 +23,14 @@
     
 
     <div class="content settings">
-        <p>Username</p>
-        <input></input>
+        <h2>Who can check on me?</h2>
+        <ul id = "supervisor-list">
+
+        </ul>
+        
+        <h2>Add someone</h2>
+        <input type="text" id = "new-supervisor-name">
+        <button onclick = "addSupervisorButtonPress()">Add someone</button>
     </div>
 
 </body>

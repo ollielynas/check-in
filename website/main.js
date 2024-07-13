@@ -21,32 +21,42 @@ function button_press() {
     })
 }
 
-function add_supervisor(username) {
-    fetch(`/api/add_supervisor?username=${encodeURIComponent(username)}`, {
+async function add_supervisor(username) {
+    await fetch(`/api/add_supervisor?username=${encodeURIComponent(username)}`, {
         "method": "POST"
     })
 }
 
-function remove_supervisor(username) {
-    fetch(`/api/remove_supervisor?username=${encodeURIComponent(username)}`, {
+async function remove_supervisor(username) {
+    await fetch(`/api/remove_supervisor?username=${encodeURIComponent(username)}`, {
         "method": "POST"
     })
+}
+
+function check_response(res) {
+    if ("error" in res) {
+        if (res["error"] == "NOT_LOGGED_IN") {
+            window.location = "/website/login.html";
+        }
+    }
+
+    return res["result"]
 }
 
 async function am_i_in_session() {
-    return (await (await fetch("/api/am_i_in_session")).json())["result"];
+    return (await (await fetch("/api/am_i_in_session")).json());
 }
 
 async function get_supervisors() {
-    return (await (await fetch("/api/supervisors")).json())["result"];
+    return (await (await fetch("/api/supervisors")).json());
 }
 
 async function get_supervisees() {
-    return (await (await fetch("/api/supervisees")).json())["result"];
+    return (await (await fetch("/api/supervisees")).json());
 }
 
 async function get_press_info(username) {
-    return (await (await fetch(`/api/presses?username=${encodeURIComponent(username)}`)).json())["result"];
+    return (await (await fetch(`/api/presses?username=${encodeURIComponent(username)}`)).json());
 }
 
 function getCookie(name) {

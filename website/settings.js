@@ -36,8 +36,45 @@ async function loadSupervisors() {
     }
 }
 
+async function loadEmail() {
+    let email = check_response(await (await fetch("/api/my_email")).json());
+    console.log(email);
+
+    const field = document.getElementById("new-email");
+
+    if (email === null) {
+        field.setAttribute("placeholder", "Enter emergency email")
+    } else {
+        field.setAttribute("placeholder", "");
+        field.value = email;
+    }
+}
+
+async function updateEmail() {
+    const button = document.getElementById("update-email-button");
+    button.innerText = "Updating .";
+
+    let counter = 0;
+    updateCallback = () => {
+        counter += 1;
+        const amount = counter % 3 + 1;
+        button.innerText = "Updating " + ".".repeat(amount);
+    };
+
+    const handle = setInterval(updateCallback, 500);
+
+    const email = document.getElementById("new-email").value;
+    const res = check_response(await (await fetch(`/api/set_email?email=${encodeURIComponent(email)}`, {method: "POST"})).json());
+
+    clearInterval(handle);
+    button.innerText = "Updated!";
+
+    setTimeout(() => button.innerText = "Update", 5000);
+}
+
 async function settingsLoad() {
     await loadSupervisors();
+    await loadEmail();
 }
 
 async function removeSupervisorButtonPress(name) {

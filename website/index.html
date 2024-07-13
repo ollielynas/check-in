@@ -28,10 +28,9 @@
 
     <div class="content">
         <div class="out-session-content">
-        <button onclick="start_session_home();get_params_and_start_session()" class="big-button">
+        <button onclick="start_session_home();get_params_and_start_session()" class="big-button button-51">
             Start Session
         </button>
-        </div>
         <div class="h">
             <span>Check in every</span>
         <span onkeypress="return /^\d+$/.test(String.fromCharCode(event.charCode));" contenteditable="true" value="20" type="number">20</span>
@@ -50,7 +49,7 @@
             <img src="vine2.png"><img>
             <h1 id="timer">00:00:01</h1>
             <i>Since you last checked in</i> 
-            <i>Check in again by <span id="checkin-time"></span></i>    
+            <br>    
             <br>
             <br>
         <button id="checkin-button" class="confirm-ok button-9" onclick="checkIn()">
@@ -68,4 +67,3 @@
 
 </body>
 </html>
-

@@ -61,6 +61,7 @@ def setup_db():
     cur.execute("ALTER TABLE user ADD session_stop STRING")
     cur.execute("ALTER TABLE user ADD last_checkin STRING")
     cur.execute("ALTER TABLE user ADD alerted INTEGER")
+    cur.execute("ALTER TABLE user ADD email STRING")
 
     conn.commit()
 
@@ -84,6 +85,7 @@ def do_registration():
         username = request.form["username"]
         password = request.form["password"]
         confirm = request.form["confirm-password"]
+        email = request.form["email"]
         remember = request.form["remember"] == "on" if "remember" in request.form else False
 
         if password != confirm:
@@ -98,7 +100,7 @@ def do_registration():
         if res.fetchone() is not None:
             return render_template("register.html", errors = ["Username is already in use!"])
         
-        cur.execute("INSERT INTO user (username, password_hash) VALUES (?,?)", [username, password_hash])
+        cur.execute("INSERT INTO user (username, password_hash, email) VALUES (?,?,?)", [username, password_hash,email])
 
         conn.commit()
 
@@ -262,6 +264,49 @@ def is_in_session():
     (in_session,) = cur.execute("SELECT (in_session) FROM user WHERE id = ?", [user]).fetchone()
 
     return Response(json.dumps({"result": bool(in_session)}), 200, mimetype="application/json")
+
+@app.route("/api/my_email", methods = ["GET"])
+def get_my_email():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    cur = conn.cursor()
+    (email,) = cur.execute("SELECT (email) FROM user WHERE id = ?", [user]).fetchone()
+
+    return Response(json.dumps({"result": email}), 200, mimetype="application/json")
+
+@app.route("/api/set_email", methods = ["POST"])
+def set_my_email():
+    user = authenticate_user()
+
+    if user is None:
+        res = Response(
+            json.dumps({"error": "NOT_LOGGED_IN"}),
+            403,
+            mimetype="application/json"
+        )
+
+        res.set_cookie("token", "", expires=0)
+
+        return res
+    
+    email = request.args["email"]
+    
+    cur = conn.cursor()
+    cur.execute("UPDATE user SET email = ? WHERE id = ?", [email, user])
+    conn.commit()
+
+    return Response(json.dumps({"result": email}), 200, mimetype="application/json")
 
 @app.route("/api/add_supervisor", methods = ["POST"])
 def add_supervisor():

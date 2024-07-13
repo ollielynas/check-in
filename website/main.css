@@ -252,7 +252,7 @@ span {
     .in-session-content {
         left: 50%;
         right: 50%;
-        min-width: max-content;
+        min-width: 20em;
         transform: translate(-50%,0);
         
     }

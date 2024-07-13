@@ -20,7 +20,7 @@
 
 
 html body {
-    overflow: hidden;
+    overflow-x: hidden;
     font-family: "Roboto", sans-serif;
 
 }
@@ -59,7 +59,7 @@ img {
   }
 
 .content {
-    position: absolute;
+    position: relative;
     width: 80%;
     top: 3em;
     bottom: 0;

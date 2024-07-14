@@ -108,7 +108,7 @@ async function get_press_info(username) {
     return (await (await fetch(`/api/presses?username=${encodeURIComponent(username)}`)).json());
 }
 
-window.onload = async () => {
+windowOnLoad = async () => {
     if (getCookie("token") != null) {
         document.querySelector(".nav-sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
         document.querySelector(".nav-sign-in-button").onclick = () => {

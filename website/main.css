@@ -122,7 +122,7 @@ body[in-session="true"] .out-session-content {
     /* ali */
     position: absolute;
     top: 50vh;
-    z-index: -1;
+    z-index: 0;
     transform: translate(0,-50%);
     gap: 1em;
 }

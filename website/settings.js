@@ -26,7 +26,7 @@ async function loadSupervisors() {
                 if (confirm("Are you sure you want to remove " + supervisor + " as a supervisor?")){
                     removeSupervisorButtonPress(supervisor);
                 }
-            }
+            }  
             removeLink.href = "javascript:void(0)"
 
             elem.appendChild(removeLink);

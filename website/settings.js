@@ -21,8 +21,7 @@ async function loadSupervisors() {
             elem.classList.add("supervisor-name");
 
             const removeLink = document.createElement("a");
-            removeLink.innerText = "Remove";
-            removeLink.className="";
+            removeLink.innerText = "✕";
             removeLink.onclick = () => {
                 if (confirm("Are you sure you want to remove " + supervisor + " as a supervisor?")){
                     removeSupervisorButtonPress(supervisor);
@@ -74,6 +73,14 @@ async function updateEmail() {
 }
 
 async function settingsLoad() {
+    if (getCookie("token") != null) {
+        document.querySelector(".nav-sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
+        document.querySelector(".nav-sign-in-button").onclick = () => {
+            document.cookie='token=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            window.location.reload();
+        };
+    }
+
     await loadSupervisors();
     await loadEmail();
 }

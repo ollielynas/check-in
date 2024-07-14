@@ -83,3 +83,11 @@ main {
     display: flex;
     height: 100%;
 }
+
+.missing-user {
+    color: red;
+}
+
+.missing-user::after {
+    content: " (missing)";
+}

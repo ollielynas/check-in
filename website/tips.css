@@ -20,7 +20,7 @@
 
 
 html body {
-    overflow: hidden;
+    overflow-x: hidden;
     font-family: "Roboto", sans-serif;
 
 }
@@ -59,7 +59,7 @@ img {
   }
 
 .content {
-    position: absolute;
+    position: relative;
     width: 80%;
     top: 3em;
     bottom: 0;
@@ -83,6 +83,7 @@ img {
 .settings * {
     margin: 0.1em;
 }
+
 
 
 
@@ -120,10 +121,6 @@ body[in-session="true"] .out-session-content {
 .out-session-content {
     /* display: flex; */
     /* ali */
-    position: absolute;
-    top: 50vh;
-    z-index: -1;
-    transform: translate(0,-50%);
     gap: 1em;
 }
 
@@ -226,7 +223,7 @@ body[in-session="signed-out"] .out-session-content {
 .out-session-content button {
     background-color: transparent;
     border: none;
-    font-size: 2em;
+    font-size: 3em;
 }
 
 
@@ -255,7 +252,7 @@ span {
 }
 
 .out-session-content span {
-    font-size: 1.2em;
+    font-size: 2em;
 }
 
 .cancel-button {
@@ -332,13 +329,12 @@ span {
 }
 
 .in-session-content img {
-    width: 20em;
-    top: -3.2em;
+    width: 12em;
+    top: -1.45em;
     position: absolute;
-    left: -2.3em;
+    left: -1.31em;
     filter: none;
 }
-
 
 
 .not-signed-in {
@@ -391,9 +387,4 @@ h1 {
     color: #00035f;
     margin-right: 10px;
     font-weight: bold;
-}
-
-
-.big-button {
-    line-height: 120%;
 }

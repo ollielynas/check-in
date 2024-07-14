@@ -12,11 +12,11 @@ function initMap() {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    populateFriendList();
+    populateFriendList(true);
 }
 
 let markers = [];
-async function populateFriendList() {
+async function populateFriendList(focus) {
     for (marker of markers) {
         map.removeLayer(marker);
     }
@@ -53,8 +53,17 @@ async function populateFriendList() {
             const startTime = new Date(Date.parse(friendData[key]["start"]));
             const formattedStartTime = startTime.toLocaleString();
 
+            const lastCheckin = Date.parse(friendData[key]["last_checkin"]);
+            const expiry = lastCheckin + 60 * 1000 * friendData[key]["interval"];
+            const expired = Date.now() >= expiry;
+
             const startTimeDisplay = document.createElement("span");
             startTimeDisplay.classList.add("start-time");
+
+            if (expired) {
+                title.classList.add("missing-user");
+            }
+
             startTimeDisplay.innerText = `Started at ${formattedStartTime}`;
             listItem.appendChild(startTimeDisplay);
 
@@ -110,7 +119,9 @@ async function populateFriendList() {
         friendList.appendChild(listItem);
     }
 
-    map.setView(focusOn);
+    if (focus) {
+        map.setView(focusOn);
+    }
 
     /*friends.forEach(friend => {
         

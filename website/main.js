@@ -48,6 +48,8 @@ function update_timer() {
     if (Date.now() >= session_end_time) {
         end_session_home();
         session_end_time = start_time + 1000000000000;
+
+        setTimeout(() => window.location.reload(), 5000);
     }
 }
 
@@ -108,7 +110,11 @@ async function get_press_info(username) {
 
 window.onload = async () => {
     if (getCookie("token") != null) {
-        document.querySelector(".sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
+        document.querySelector(".nav-sign-in-button").innerHTML = "<i class=\"ph ph-sign-out\"></i>";
+        document.querySelector(".nav-sign-in-button").onclick = () => {
+            document.cookie='token=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            window.location.reload();
+        };
     }
 
     let resp = check_response(await get_press_info(getCookie("username")));
@@ -119,6 +125,10 @@ window.onload = async () => {
         start_time = Date.parse(resp["start"]);
         session_end_time = Date.parse(resp["stop"]);
         interval = resp["interval"];
+
+        if (resp["alerted"]) {
+            session_end_time += 1000000000000;
+        }
 
         console.log(resp);
         if (resp["presses"].length != 0) {
@@ -134,8 +144,9 @@ window.onload = async () => {
 function updateCheckinTime() {
     let time = start_time + interval * 60000;
     let time_str = new Date(time).toLocaleTimeString();
+    let time_without_seconds = time_str.replace(/:\d{2}$/, '');
 
-    document.getElementById("checkin-time").innerText = time_str;
+    document.getElementById("checkin-time").innerText = time_without_seconds;
 }
 
 async function checkIn() {

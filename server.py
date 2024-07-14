@@ -465,7 +465,7 @@ def get_presses():
 
     cur = conn.cursor()
 
-    username_res = cur.execute("SELECT id, in_session, session_start_time, session_stop, checkin_interval FROM user WHERE username = ?", [username]).fetchone()
+    username_res = cur.execute("SELECT id, in_session, session_start_time, session_stop, checkin_interval, alerted FROM user WHERE username = ?", [username]).fetchone()
 
     if username_res is None:
         res = Response(
@@ -476,7 +476,7 @@ def get_presses():
 
         return res
 
-    (user_id, in_session, start_time, stop_time, checkin_interval) = username_res
+    (user_id, in_session, start_time, stop_time, checkin_interval, alerted) = username_res
 
     allowed = True
     if user_id != user:
@@ -508,7 +508,8 @@ def get_presses():
             "start": start_time,
             "stop": stop_time,
             "interval": checkin_interval,
-            "presses": presses
+            "presses": presses,
+            "alerted": alerted
         }
 
     return Response(json.dumps({"result": res}), 200, mimetype="application/json")
@@ -530,11 +531,11 @@ def get_all_presses():
 
     cur = conn.cursor()
 
-    username_res = cur.execute("SELECT user.id, user.username, user.in_session, user.session_start_time, user.session_stop, user.checkin_interval FROM supervisor JOIN user ON user.id=supervisor.supervisee_id WHERE supervisor_id = ?", [user]).fetchall()
+    username_res = cur.execute("SELECT user.id, user.username, user.in_session, user.session_start_time, user.session_stop, user.checkin_interval, user.last_checkin FROM supervisor JOIN user ON user.id=supervisor.supervisee_id WHERE supervisor_id = ?", [user]).fetchall()
 
     res = {}
 
-    for user_id, username, in_session, session_start, session_stop, interval in username_res:
+    for user_id, username, in_session, session_start, session_stop, interval, last_checkin in username_res:
         if not in_session:
             res[username] = "not in session"
         else:
@@ -542,6 +543,7 @@ def get_all_presses():
             data["start"] = session_start
             data["interval"] = interval
             data["stop"] = session_stop
+            data["last_checkin"] = last_checkin
 
             presses = cur.execute("SELECT timestamp, location FROM button_press WHERE user_id = ? AND timestamp >= ?", [user_id, session_start]).fetchall()
             presses = [
@@ -622,7 +624,7 @@ ALERT_EMAIL_SUBJECT = "Check-in Chicken Alert"
 ALERT_EMAIL_CONTENTS = """
 Your friend, {name} has not checked-in on Check-in Chicken. Give 'em a ring.
 
-Sincrerest Regard,
+Best Regards,
 
 Charlie
 """
@@ -641,9 +643,9 @@ def check(text):
     res = cur.execute("SELECT id, username, session_start_time, checkin_interval, last_checkin FROM user WHERE alerted = 0 AND in_session = 1").fetchall()
     
     for user_id, username, session_start, interval, last_checkin in res:
-        alert_time = datetime.strptime(last_checkin, TIME_FORMAT) + timedelta(minutes=interval+5)
+        alert_time = datetime.strptime(last_checkin + "+12:00", TIME_FORMAT + "%z") + timedelta(minutes=interval+5)
         print(username, alert_time)
-        if alert_time <= datetime.now():
+        if alert_time <= datetime.now(TIMEZONE):
             print("Alerting")
             for email in cur.execute("SELECT user.email FROM supervisor JOIN user ON user.id=supervisor.supervisor_id WHERE supervisee_id = ?", [user_id]).fetchall():
                 if email is not None and email != "":
